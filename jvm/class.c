@@ -366,7 +366,7 @@ hb_resolve_method (u2 const_idx,
 		   java_class_t * target_cls)
 {
 	method_info_t * ret = NULL;
-	java_class_t * cur_cls = NULL;
+	java_class_t * cls = NULL;
 	int i;
 
 	if (hb_is_interface(src_cls)) {
@@ -375,17 +375,46 @@ hb_resolve_method (u2 const_idx,
 	}
 
 	if(target_cls) {
-		cur_cls = target_cls;
+		cls = target_cls;
 	} else {
-		cur_cls = src_cls;
+		cls = src_cls;
 	}
 
 	CONSTANT_Methodref_info_t * methodref = (CONSTANT_Methodref_info_t*) src_cls->const_pool[const_idx];
 	CONSTANT_NameAndType_info_t * nameAndType =  (CONSTANT_NameAndType_info_t *) src_cls->const_pool[methodref->name_and_type_idx];
 	const char * mname = hb_get_const_str(nameAndType->name_idx, src_cls);
 	const char * mdesc = hb_get_const_str(nameAndType->desc_idx, src_cls);
+	
+	for (i = 0; i < cls->methods_count; i++) {
+		u2 nidx = cls->methods[i].name_idx;
+		u2 didx = cls->methods[i].desc_idx;
+		const char * tnm = hb_get_const_str(nidx, cls);
+		const char * tds = hb_get_const_str(didx, cls);
+		if (strcmp(tnm, mname) == 0 && strcmp(tds, mdesc) == 0) {
+			ret = &cls->methods[i];
+			break;
+		}
+	}
 
-	return hb_find_method_by_desc(mname, mdesc, cur_cls);
+	// recursive search
+	if (!ret) {
+		java_class_t * super = hb_get_super_class(cls);
+		if (super) {
+			ret = hb_resolve_method(const_idx, src_cls, super);
+		}
+	}
+			
+	// TODO: also check superinterfaces (5.4.3.3)
+	if (!ret) {
+		HB_ERR("Could not find method ref (looked in %s)", hb_get_class_name(cls));
+	}
+
+	printf("mname:%s, mdesc:%s", mname, mdesc);
+	
+	return ret;
+
+
+	// return hb_find_method_by_desc(mname, mdesc, cur_cls);
 }
 
 /* 

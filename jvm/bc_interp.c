@@ -949,6 +949,8 @@ handle_iadd (u1 * bc, java_class_t * cls) {
 	b = pop_val();
 	c.int_val = (u4)((int)a.int_val + (int)b.int_val);
 	push_val(c);
+
+	printf("handle_iadd %d", (int)c.int_val);
 	
 	return 1;
 }
@@ -1843,11 +1845,14 @@ handle_invokeinterface (u1 * bc, java_class_t * cls) {
 	return -1;
 }
 
+
 static int
 handle_invokedynamic (u1 * bc, java_class_t * cls) {
 	HB_ERR("%s NOT IMPLEMENTED", __func__);
-	return -1;
+	return -1; 
 }
+
+
 
 // WRITE ME
 static int
@@ -1855,13 +1860,15 @@ handle_new (u1 * bc, java_class_t * cls) {
 	u2 const_idx;
 	var_t o;
 
+	printf("handle_new");
+
 	const_idx = (bc[1] << 8) | bc[2];
 	java_class_t * resolved_cls =  hb_resolve_class(const_idx, cls);
 	o.obj = gc_obj_alloc(resolved_cls);
 
 	push_val(o);
 
-	return 1;
+	return 3;
 }
 
 // WRITE ME
@@ -2170,4 +2177,3 @@ hb_exec_method (jthread_t * t)
 
 	return 0;
 }
-
