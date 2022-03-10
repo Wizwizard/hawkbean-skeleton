@@ -246,8 +246,30 @@ hb_get_method_idx (const char * name, java_class_t * cls)
 java_class_t * 
 hb_resolve_class (u2 const_idx, java_class_t * src_cls)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
-    return NULL;
+	if(const_idx == 0) {
+		return NULL;
+	}
+
+	CONSTANT_Class_info_t * class_info_t = (CONSTANT_Class_info_t *) src_cls->const_pool[const_idx];
+	if (IS_RESOLVED(class_info_t)) {
+		return (java_class_t *)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);
+	}
+
+	const char* class_name = hb_get_const_str(class_info_t->name_idx, src_cls);
+	java_class_t* resolved_class = hb_get_class(class_name);
+	if(!resolved_class) {
+		resolved_class = hb_load_class(class_name);
+		if (!resolved_class) {
+			HB_ERR("Couldn't load class");
+			return NULL;
+		}
+
+		hb_add_class(class_name, resolved_class);
+		hb_prep_class(resolved_class);
+		hb_init_class(resolved_class);
+	}
+	src_cls->const_pool[const_idx] = (const_pool_info_t *) MARK_RESOLVED(resolved_class);
+	return resolved_class;
 }
 
 
@@ -343,8 +365,27 @@ hb_resolve_method (u2 const_idx,
 		   java_class_t * src_cls,
 		   java_class_t * target_cls)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
-    return NULL;
+	method_info_t * ret = NULL;
+	java_class_t * cur_cls = NULL;
+	int i;
+
+	if (hb_is_interface(src_cls)) {
+		HB_ERR("Attemp to find method in interface in %s", __func__);
+		return NULL;
+	}
+
+	if(target_cls) {
+		cur_cls = target_cls;
+	} else {
+		cur_cls = src_cls;
+	}
+
+	CONSTANT_Methodref_info_t * methodref = (CONSTANT_Methodref_info_t*) src_cls->const_pool[const_idx];
+	CONSTANT_NameAndType_info_t * nameAndType =  (CONSTANT_NameAndType_info_t *) src_cls->const_pool[methodref->name_and_type_idx];
+	const char * mname = hb_get_const_str(nameAndType->name_idx, src_cls);
+	const char * mdesc = hb_get_const_str(nameAndType->desc_idx, src_cls);
+
+	return hb_find_method_by_desc(mname, mdesc, cur_cls);
 }
 
 /* 
