@@ -275,7 +275,7 @@ gc_obj_alloc (java_class_t * cls)
 static int 
 sweep (gc_state_t * state)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);	
+    // HB_ERR("%s NOT IMPLEMENTED", __func__);	
 	return 0;
 }
 
@@ -432,7 +432,7 @@ mark_ref (obj_ref_t * ref, gc_state_t * state)
 static int
 scan_base_obj (gc_state_t * gc_state, void * priv_data)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
+    // HB_ERR("%s NOT IMPLEMENTED", __func__);
 	return 0;
 }
 
@@ -444,7 +444,7 @@ scan_base_obj (gc_state_t * gc_state, void * priv_data)
 static int
 scan_base_frame (gc_state_t * gc_state, void * priv_data)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
+    // HB_ERR("%s NOT IMPLEMENTED", __func__);
 	return 0;
 }
 
@@ -457,7 +457,7 @@ scan_base_frame (gc_state_t * gc_state, void * priv_data)
 static int
 scan_class_map (gc_state_t * gc_state, void * priv_data)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
+    // HB_ERR("%s NOT IMPLEMENTED", __func__);
 	return 0;
 }
 

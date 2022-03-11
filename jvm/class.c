@@ -378,6 +378,7 @@ hb_resolve_method (u2 const_idx,
 		cls = target_cls;
 	} else {
 		cls = src_cls;
+
 	}
 
 	CONSTANT_Methodref_info_t * methodref = (CONSTANT_Methodref_info_t*) src_cls->const_pool[const_idx];

@@ -950,8 +950,6 @@ handle_iadd (u1 * bc, java_class_t * cls) {
 	c.int_val = (u4)((int)a.int_val + (int)b.int_val);
 	push_val(c);
 
-	printf("handle_iadd %d", (int)c.int_val);
-	
 	return 1;
 }
 
@@ -2118,7 +2116,7 @@ hb_exec_one (jthread_t * t)
 
     // see if its time to GC (only if we still have a frame)
     if (t->cur_frame && gc_should_collect(t)) {
-        gc_collect(t);
+        // gc_collect(t);
     }
 
 #if DEBUG == 1
