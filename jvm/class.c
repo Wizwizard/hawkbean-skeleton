@@ -396,38 +396,38 @@ hb_resolve_method (u2 const_idx,
 	}
 
 	if ( !target_cls ) {
-		HR_ERR("Could not resolve class in %s", __func__);
+		HB_ERR("Could not resolve class in %s", __func__);
 		return NULL;
 	}
 	
-	for (i = 0; i < cls->methods_count; i++) {
-		u2 nidx = cls->methods[i].name_idx;
-		u2 didx = cls->methods[i].desc_idx;
-		const char * tnm = hb_get_const_str(nidx, cls);
-		const char * tds = hb_get_const_str(didx, cls);
-		if (strcmp(tnm, mname) == 0 && strcmp(tds, mdesc) == 0) {
-			ret = &cls->methods[i];
-			break;
-		}
-	}
+	return hb_find_method_by_desc(mname, mdesc, target_cls);
+	// for (i = 0; i < cls->methods_count; i++) {
+	// 	u2 nidx = cls->methods[i].name_idx;
+	// 	u2 didx = cls->methods[i].desc_idx;
+	// 	const char * tnm = hb_get_const_str(nidx, cls);
+	// 	const char * tds = hb_get_const_str(didx, cls);
+	// 	if (strcmp(tnm, mname) == 0 && strcmp(tds, mdesc) == 0) {
+	// 		ret = &cls->methods[i];
+	// 		break;
+	// 	}
+	// }
 
-	// recursive search
-	if (!ret) {
-		java_class_t * super = hb_get_super_class(cls);
-		if (super) {
-			ret = hb_resolve_method(const_idx, src_cls, super);
-		}
-	}
+	// // recursive search
+	// if (!ret) {
+	// 	java_class_t * super = hb_get_super_class(cls);
+	// 	if (super) {
+	// 		ret = hb_resolve_method(const_idx, src_cls, super);
+	// 	}
+	// }
 			
-	// TODO: also check superinterfaces (5.4.3.3)
-	if (!ret) {
-		HB_ERR("Could not find method ref (looked in %s)", hb_get_class_name(cls));
-	}
+	// // TODO: also check superinterfaces (5.4.3.3)
+	// if (!ret) {
+	// 	HB_ERR("Could not find method ref (looked in %s)", hb_get_class_name(cls));
+	// }
 
-	return ret;
+	// return ret;
 
 
-	// return hb_find_method_by_desc(mname, mdesc, cur_cls);
 }
 
 /* 
