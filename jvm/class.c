@@ -247,43 +247,43 @@ java_class_t *
 hb_resolve_class (u2 const_idx, java_class_t * src_cls)
 {
 const char * class_nm;    java_class_t * cls;
-    // special case    
-	if (const_idx == 0 || const_idx > src_cls->const_pool_count) {        return NULL;    }    
-	// check if the constant pool entry has been resolved already    
-	if (IS_RESOLVED(src_cls->const_pool[const_idx])) {        return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);    }    
-	// check tag type    
-	if (src_cls->const_pool[const_idx]->tag != CONSTANT_Class) {        HB_ERR("Non-Class constant in %s (type = %d)", __func__,            src_cls->const_pool[const_idx]->tag);        return NULL;    }    CONSTANT_Class_info_t *c = (CONSTANT_Class_info_t*)src_cls->const_pool[const_idx];
-    // check class name    
-	class_nm = (char*)hb_get_const_str(c->name_idx, src_cls);    cls = hb_get_class(class_nm);
-    // class is in the class map, it should be returned    
-	if (cls) {        src_cls->const_pool[const_idx] = (const_pool_info_t*)MARK_RESOLVED(cls);        return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);    }    
-	// HB_DEBUG(const_idx);    
-	cls = hb_load_class(class_nm);    hb_add_class(class_nm, cls);    hb_prep_class(cls);    hb_init_class(cls);    src_cls->const_pool[const_idx] = (const_pool_info_t*)MARK_RESOLVED(cls);    return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);
+    // // special case    
+	// if (const_idx == 0 || const_idx > src_cls->const_pool_count) {        return NULL;    }    
+	// // check if the constant pool entry has been resolved already    
+	// if (IS_RESOLVED(src_cls->const_pool[const_idx])) {        return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);    }    
+	// // check tag type    
+	// if (src_cls->const_pool[const_idx]->tag != CONSTANT_Class) {        HB_ERR("Non-Class constant in %s (type = %d)", __func__,            src_cls->const_pool[const_idx]->tag);        return NULL;    }    CONSTANT_Class_info_t *c = (CONSTANT_Class_info_t*)src_cls->const_pool[const_idx];
+    // // check class name    
+	// class_nm = (char*)hb_get_const_str(c->name_idx, src_cls);    cls = hb_get_class(class_nm);
+    // // class is in the class map, it should be returned    
+	// if (cls) {        src_cls->const_pool[const_idx] = (const_pool_info_t*)MARK_RESOLVED(cls);        return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);    }    
+	// // HB_DEBUG(const_idx);    
+	// cls = hb_load_class(class_nm);    hb_add_class(class_nm, cls);    hb_prep_class(cls);    hb_init_class(cls);    src_cls->const_pool[const_idx] = (const_pool_info_t*)MARK_RESOLVED(cls);    return (java_class_t*)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);
 
-	// if(const_idx == 0 || const_idx > src_cls->const_pool_count) {
-	// 	return NULL;
-	// }
+	if(const_idx == 0 || const_idx > src_cls->const_pool_count) {
+		return NULL;
+	}
 
-	// CONSTANT_Class_info_t * class_info_t = (CONSTANT_Class_info_t *) src_cls->const_pool[const_idx];
-	// if (IS_RESOLVED(class_info_t)) {
-	// 	return (java_class_t *)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);
-	// }
+	CONSTANT_Class_info_t * class_info_t = (CONSTANT_Class_info_t *) src_cls->const_pool[const_idx];
+	if (IS_RESOLVED(class_info_t)) {
+		return (java_class_t *)MASK_RESOLVED_BIT(src_cls->const_pool[const_idx]);
+	}
 
-	// const char* class_name = hb_get_const_str(class_info_t->name_idx, src_cls);
-	// java_class_t* resolved_class = hb_get_class(class_name);
-	// if(!resolved_class) {
-	// 	resolved_class = hb_load_class(class_name);
-	// 	if (!resolved_class) {
-	// 		HB_ERR("Couldn't load class");
-	// 		return NULL;
-	// 	}
+	const char* class_name = hb_get_const_str(class_info_t->name_idx, src_cls);
+	java_class_t* resolved_class = hb_get_class(class_name);
+	if(!resolved_class) {
+		resolved_class = hb_load_class(class_name);
+		if (!resolved_class) {
+			HB_ERR("Couldn't load class");
+			return NULL;
+		}
 
-	// 	hb_add_class(class_name, resolved_class);
-	// 	hb_prep_class(resolved_class);
-	// 	hb_init_class(resolved_class);
-	// }
-	// src_cls->const_pool[const_idx] = (const_pool_info_t *) MARK_RESOLVED(resolved_class);
-	// return resolved_class;
+		hb_add_class(class_name, resolved_class);
+		hb_prep_class(resolved_class);
+		hb_init_class(resolved_class);
+	}
+	src_cls->const_pool[const_idx] = (const_pool_info_t *) MARK_RESOLVED(resolved_class);
+	return resolved_class;
 }
 
 
