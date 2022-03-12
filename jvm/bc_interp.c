@@ -1861,8 +1861,6 @@ handle_new (u1 * bc, java_class_t * cls) {
 	var_t ret;
 	u2 idx;
 
-	u2 const_idx = (bc[1] << 8) | bc[2];
-		
 	idx = GET_2B_IDX(bc);
 
 	/* load and initialize the class (if not already) */
@@ -1879,6 +1877,9 @@ handle_new (u1 * bc, java_class_t * cls) {
 		hb_throw_and_create_excp(EXCP_OOM);
 		return -ESHOULD_BRANCH;
 	}
+	aobj = (native_obj_t*)oa->heap_ptr;
+	
+	aobj->class = target_cls;
 
 	ret.obj = oa;
 
