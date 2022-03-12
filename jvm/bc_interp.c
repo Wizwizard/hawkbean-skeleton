@@ -1901,8 +1901,39 @@ handle_new (u1 * bc, java_class_t * cls) {
 // WRITE ME
 static int
 handle_newarray (u1 * bc, java_class_t * cls) {
-	HB_ERR("%s NOT IMPLEMENTED", __func__);
-	return -1;
+	java_class_t * target_cls = NULL;
+	obj_ref_t * oa = NULL;
+	native_obj_t * aobj = NULL;
+	var_t len = pop_val();
+	var_t ret;
+	u1 atype;
+		
+	atype = bc[1];
+
+	//MAX_TO_DO: judge if atype is legal
+
+	if (len.int_val < 0) {
+		hb_throw_and_create_excp(EXCP_NEG_ARR_SIZE);
+		return -ESHOULD_BRANCH;
+	}
+
+	oa = gc_array_alloc(atype, len.int_val);
+
+	if (!oa) {
+		hb_throw_and_create_excp(EXCP_OOM);
+		return -ESHOULD_BRANCH;
+	}
+
+	// aobj = (native_obj_t*)oa->heap_ptr;
+	
+	// aobj->class = target_cls;
+	
+	ret.obj = oa;
+
+	BC_DEBUG("Allocated new array at %p in %s", ret.obj, __func__);
+	push_val(ret);
+
+	return 2;
 }
 
 static int

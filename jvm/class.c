@@ -250,7 +250,7 @@ hb_resolve_class (u2 const_idx, java_class_t * src_cls)
 	java_class_t * cls;
 
 	if(const_idx == 0 || const_idx > src_cls->const_pool_count) {
-		HB_ERR("const_idx not correct in %s", __func__);
+		// HB_ERR("const_idx not correct in %s", __func__);
 		return NULL;
 	}
 
