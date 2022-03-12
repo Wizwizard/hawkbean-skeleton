@@ -1855,16 +1855,47 @@ handle_invokedynamic (u1 * bc, java_class_t * cls) {
 // WRITE ME
 static int
 handle_new (u1 * bc, java_class_t * cls) {
-	u2 const_idx;
-	var_t o;
+	java_class_t * target_cls = NULL;
+	obj_ref_t * oa = NULL;
+	native_obj_t * aobj = NULL;
+	var_t ret;
+	u2 idx;
+		
+	idx = GET_2B_IDX(bc);
 
-	printf("handle_new");
+	/* load and initialize the class (if not already) */
+	target_cls = hb_resolve_class(idx, cls);
 
-	const_idx = (bc[1] << 8) | bc[2];
-	java_class_t * resolved_cls =  hb_resolve_class(const_idx, cls);
-	o.obj = gc_obj_alloc(resolved_cls);
+	if (!target_cls) {
+		HB_ERR("Could not resolve class ref in %s", __func__);
+		return -1;
+	}
 
-	push_val(o);
+	oa = gc_obj_alloc(cls);
+
+	if (!oa) {
+		hb_throw_and_create_excp(EXCP_OOM);
+		return -ESHOULD_BRANCH;
+	}
+
+	aobj = (native_obj_t*)oa->heap_ptr;
+	
+	aobj->class = target_cls;
+	
+	ret.obj = oa;
+
+	BC_DEBUG("Allocated new array at %p in %s", ret.obj, __func__);
+	push_val(ret);
+
+
+
+	// var_t o;
+
+	// const_idx = (bc[1] << 8) | bc[2];
+	// java_class_t * resolved_cls =  hb_resolve_class(const_idx, cls);
+	// o.obj = gc_obj_alloc(resolved_cls);
+
+	// push_val(o);
 
 	return 3;
 }
