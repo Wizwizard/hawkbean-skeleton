@@ -1923,6 +1923,8 @@ handle_newarray (u1 * bc, java_class_t * cls) {
 		hb_throw_and_create_excp(EXCP_OOM);
 		return -ESHOULD_BRANCH;
 	}
+	
+	// MAX TO-DO: how to init the value of array?
 
 	// aobj = (native_obj_t*)oa->heap_ptr;
 	
@@ -1982,8 +1984,23 @@ handle_anewarray (u1 * bc, java_class_t * cls) {
 // WRITE ME
 static int
 handle_arraylength (u1 * bc, java_class_t * cls) {
-	HB_ERR("%s NOT IMPLEMENTED", __func__);
-	return -1;
+	obj_ref_t * oa = NULL;
+	native_obj_t * aobj = NULL;
+	var_t val = pop_val();
+	var_t ret;
+
+	oa = val.obj;
+	aobj = (native_obj_t *) oa->heap_ptr;
+
+	if(!aobj) {
+		hb_throw_and_create_excp(EXCP_NULL_PTR);
+		return -ESHOULD_BRANCH;
+	}
+
+	ret.int_val = aobj->flags.array.length;
+	push_val(ret);
+	
+	return 1;
 }
 
 // WRITE ME
