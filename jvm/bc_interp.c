@@ -1860,6 +1860,8 @@ handle_new (u1 * bc, java_class_t * cls) {
 	native_obj_t * aobj = NULL;
 	var_t ret;
 	u2 idx;
+
+	u2 const_idx = (bc[1] << 8) | bc[2];
 		
 	idx = GET_2B_IDX(bc);
 
@@ -1878,20 +1880,15 @@ handle_new (u1 * bc, java_class_t * cls) {
 		return -ESHOULD_BRANCH;
 	}
 
-	aobj = (native_obj_t*)oa->heap_ptr;
-	
-	aobj->class = target_cls;
-	
 	ret.obj = oa;
 
-	BC_DEBUG("Allocated new array at %p in %s", ret.obj, __func__);
+	BC_DEBUG("Allocated new obj at %p in %s", ret.obj, __func__);
 	push_val(ret);
 
 
 
 	// var_t o;
 
-	// const_idx = (bc[1] << 8) | bc[2];
 	// java_class_t * resolved_cls =  hb_resolve_class(const_idx, cls);
 	// o.obj = gc_obj_alloc(resolved_cls);
 

@@ -253,7 +253,6 @@ typedef struct native_object {
 	var_t * fields;
 
 	// used to cross-check during field resolution
-	// super = (java_class_t*)MASK_RESOLVED_BIT(cls->const_pool[cls->super]);
 	field_info_t ** field_infos;
 
 } native_obj_t;
