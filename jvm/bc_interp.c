@@ -1856,8 +1856,8 @@ handle_invokedynamic (u1 * bc, java_class_t * cls) {
 static int
 handle_new (u1 * bc, java_class_t * cls) {
 	java_class_t * target_cls = NULL;
-	obj_ref_t * oa = NULL;
-	native_obj_t * aobj = NULL;
+	obj_ref_t * o = NULL;
+	native_obj_t * obj = NULL;
 	var_t ret;
 	u2 idx;
 
@@ -1871,17 +1871,17 @@ handle_new (u1 * bc, java_class_t * cls) {
 		return -1;
 	}
 
-	oa = gc_obj_alloc(cls);
+	o = gc_obj_alloc(target_cls);
 
-	if (!oa) {
+	if (!o) {
 		hb_throw_and_create_excp(EXCP_OOM);
 		return -ESHOULD_BRANCH;
 	}
-	aobj = (native_obj_t*)oa->heap_ptr;
+	obj = (native_obj_t*)o->heap_ptr;
 	
-	aobj->class = target_cls;
+	obj->class = target_cls;
 
-	ret.obj = oa;
+	ret.obj = o;
 
 	BC_DEBUG("Allocated new obj at %p in %s", ret.obj, __func__);
 	push_val(ret);

@@ -250,6 +250,7 @@ hb_resolve_class (u2 const_idx, java_class_t * src_cls)
 	java_class_t * cls;
 
 	if(const_idx == 0 || const_idx > src_cls->const_pool_count) {
+		HB_ERR("const_idx not correct in %s", __func__);
 		return NULL;
 	}
 
@@ -373,7 +374,6 @@ hb_resolve_method (u2 const_idx,
 		   java_class_t * target_cls)
 {
 	method_info_t * ret = NULL;
-	java_class_t * cls = NULL;
 	int i;
 
 	if (hb_is_interface(src_cls)) {
@@ -381,10 +381,7 @@ hb_resolve_method (u2 const_idx,
 		return NULL;
 	}
 
-
-
 	CONSTANT_Methodref_info_t * methodref = (CONSTANT_Methodref_info_t*) src_cls->const_pool[const_idx];
-
 	CONSTANT_NameAndType_info_t * nameAndType =  (CONSTANT_NameAndType_info_t *) src_cls->const_pool[methodref->name_and_type_idx];
 
 	if (methodref->tag != CONSTANT_Methodref) {
@@ -394,10 +391,13 @@ hb_resolve_method (u2 const_idx,
 	const char * mname = hb_get_const_str(nameAndType->name_idx, src_cls);
 	const char * mdesc = hb_get_const_str(nameAndType->desc_idx, src_cls);
 
-	if(target_cls) {
-		cls = target_cls;
-	} else {
-		cls = hb_resolve_class(methodref->class_idx, src_cls);
+	if( !target_cls ) {
+		target_cls = hb_resolve_class(methodref->class_idx, src_cls);
+	}
+
+	if ( !target_cls ) {
+		HR_ERR("Could not resolve class in %s", __func__);
+		return NULL;
 	}
 	
 	for (i = 0; i < cls->methods_count; i++) {
@@ -424,8 +424,6 @@ hb_resolve_method (u2 const_idx,
 		HB_ERR("Could not find method ref (looked in %s)", hb_get_class_name(cls));
 	}
 
-	printf("mname:%s, mdesc:%s", mname, mdesc);
-	
 	return ret;
 
 
@@ -686,9 +684,7 @@ hb_init_class (java_class_t * cls)
 		return 0;
 	}
 
-	if (hb_push_frame(cur_thread,
-				cls,
-				init_idx) != 0) {
+	if (hb_push_frame(cur_thread, cls, init_idx) != 0) {
 		HB_ERR("Could not push init method stack frame");
 		return -1;
 	}
