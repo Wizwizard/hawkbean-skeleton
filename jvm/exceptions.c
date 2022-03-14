@@ -152,7 +152,6 @@ hb_throw_exception (obj_ref_t * eref)
 	stack_frame_t * frame = NULL;
 	java_class_t * cls = NULL;
 	java_class_t * ecls = NULL;
-	stack_frame_t * stack = NULL;
 	native_obj_t * obj = NULL;
 
 	obj = (native_obj_t *)eref->heap_ptr;
@@ -171,7 +170,6 @@ hb_throw_exception (obj_ref_t * eref)
 	while(cur_thread->cur_frame != NULL) {
 		frame = cur_thread->cur_frame;
 		cls = frame->cls;
-		stack = frame->op_stack;
 		code_attr = frame->minfo->code_attr;
 		table_len = (int) code_attr->excp_table_len;
 		excp_table = code_attr->excp_table;
