@@ -1847,6 +1847,7 @@ handle_invokeinterface (u1 * bc, java_class_t * cls) {
 static int
 handle_invokedynamic (u1 * bc, java_class_t * cls) {
 	HB_ERR("%s NOT IMPLEMENTED", __func__);
+	// handle_invokevirtual();
 	return -1; 
 }
 
@@ -2006,8 +2007,21 @@ handle_arraylength (u1 * bc, java_class_t * cls) {
 // WRITE ME
 static int
 handle_athrow (u1 * bc, java_class_t * cls) {
-	HB_ERR("%s NOT IMPLEMENTED", __func__);
-	return -1;
+	obj_ref_t * eref = NULL;
+
+	// MAX to-do how to identify the class instance?
+	var_t val = pop_val();
+	eref = val.obj;
+
+	hb_throw_exception(eref);
+
+	op_stack_t * stack = cur_thread->cur_frame->op_stack;
+	while(stack->sp > 0) {
+		pop_val();
+	}
+	push_val(val);
+
+	return 1;
 }
 
 static int

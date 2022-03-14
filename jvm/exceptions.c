@@ -96,6 +96,7 @@ hb_throw_and_create_excp (u1 type)
 static char *
 get_excp_str (obj_ref_t * eref)
 {
+	// check this function
 	char * ret;
 	native_obj_t * obj = (native_obj_t*)eref->heap_ptr;
 		
@@ -144,6 +145,58 @@ get_excp_str (obj_ref_t * eref)
 void
 hb_throw_exception (obj_ref_t * eref)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
+	if (!eref) {
+		hb_throw_and_create_excp(EXCP_NULL_PTR);
+	}
+
+	stack_frame_t * frame = NULL;
+	java_class_t * cls = NULL;
+	java_class_t * ecls = NULL;
+	stack_frame_t * stack = NULL;
+	native_obj_t * obj = NULL;
+
+	obj = (native_obj_t *)eref->heap_ptr;
+	ecls = obj->class;
+
+	// MAX to-do how to identify the class instance?
+
+	code_attr_t * code_attr = NULL;
+	int table_len = 0;
+	excp_table_t * excp_table = NULL;
+	CONSTANT_Class_info_t * exp_cls_info = NULL;
+
+
+	int i;
+
+	while(cur_thread->cur_frame != NULL) {
+		frame = cur_thread->cur_frame;
+		cls = frame->cls;
+		stack = frame->op_stack;
+		code_attr = frame->minfo->code_attr;
+		table_len = (int) code_attr->excp_table_len;
+		excp_table = code_attr->excp_table;
+
+		for (i = 0; i < table_len; i ++) {
+			// catch range
+			if (excp_table[i].start_pc <= frame->pc < excp_table[i].end_pc) {
+				// NULL 
+				if(excp_table[i].catch_type == 0) {
+					frame->pc = excp_table[i].handler_pc;
+					return;
+				}
+
+				exp_cls_info = (CONSTANT_Class_info_t *)cls->const_pool[excp_table[i].catch_type];
+				const char * exp_cls_name = hb_get_const_str(exp_cls_info->name_idx, cls);
+				if (strcmp(obj->class->name, exp_cls_name) == 0 || \
+					strcmp(hb_get_super_class(ecls)->name, exp_cls_name) == 0) {
+						frame->pc = excp_table[i].handler_pc;
+						return;
+				} 
+			}
+		}
+		hb_pop_frame(cur_thread);
+	}
+
+	HB_ERR("No handler for exception %s!", obj->class->name);
     exit(EXIT_FAILURE);
 }

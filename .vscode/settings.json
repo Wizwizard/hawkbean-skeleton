@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "STACK.H": "cpp"
+        "STACK.H": "cpp",
+        "exceptions.h": "c",
+        "bc_interp.h": "c"
     }
 }
