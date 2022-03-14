@@ -1887,15 +1887,6 @@ handle_new (u1 * bc, java_class_t * cls) {
 	BC_DEBUG("Allocated new obj at %p in %s", ret.obj, __func__);
 	push_val(ret);
 
-
-
-	// var_t o;
-
-	// java_class_t * resolved_cls =  hb_resolve_class(const_idx, cls);
-	// o.obj = gc_obj_alloc(resolved_cls);
-
-	// push_val(o);
-
 	return 3;
 }
 

@@ -81,10 +81,25 @@ hb_excp_str_to_type (char * str)
 void
 hb_throw_and_create_excp (u1 type)
 {
-    HB_ERR("%s NOT IMPLEMENTED", __func__);
+	java_class_t * ecls = NULL;
+	obj_ref_t * eref = NULL;
+
+	ecls = hb_get_or_load_class(excp_strs[type]);
+	if(!ecls) {
+		// MAX to-do
+		// how to check properly?
+		HB_ERR("NULL cls in %s", __func__);
+		exit(EXIT_FAILURE);
+	}
+	eref = gc_obj_alloc(ecls);
+
+	if(!eref) {
+		HB_ERR("OOM when creating excp %s", excp_strs[type]);
+		exit(EXIT_FAILURE);
+	}	
+
+	hb_throw_exception(eref);
 }
-
-
 
 /* 
  * gets the exception message from the object 
@@ -131,6 +146,19 @@ get_excp_str (obj_ref_t * eref)
 	return ret;
 }
 
+
+bool check_if_class_or_subclass(java_class_t * cls, const char * target_cls_name)
+{
+	if (!cls) {
+		return false;
+	}
+
+	if(strcmp(hb_get_class_name(cls), target_cls_name) == 0) {
+		return true;
+	} else {
+		return check_if_class_or_subclass(hb_get_super_class(cls), target_cls_name);
+	}
+}
 
 /*
  * Throws an exception using an
@@ -185,11 +213,11 @@ hb_throw_exception (obj_ref_t * eref)
 
 				exp_cls_info = (CONSTANT_Class_info_t *)cls->const_pool[excp_table[i].catch_type];
 				const char * exp_cls_name = hb_get_const_str(exp_cls_info->name_idx, cls);
-				if (strcmp(obj->class->name, exp_cls_name) == 0 || \
-					strcmp(hb_get_super_class(ecls)->name, exp_cls_name) == 0) {
-						frame->pc = excp_table[i].handler_pc;
-						return;
-				} 
+				// MAX to-do check all super classes
+				if(check_if_class_or_subclass(ecls, exp_cls_name)) {
+					frame->pc = excp_table[i].handler_pc;
+					return;
+				}
 			}
 		}
 		hb_pop_frame(cur_thread);
