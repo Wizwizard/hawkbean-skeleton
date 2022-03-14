@@ -2198,7 +2198,7 @@ hb_exec_one (jthread_t * t)
 
     // see if its time to GC (only if we still have a frame)
     if (t->cur_frame && gc_should_collect(t)) {
-        // gc_collect(t);
+        gc_collect(t);
     }
 
 #if DEBUG == 1

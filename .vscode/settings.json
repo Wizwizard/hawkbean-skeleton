@@ -2,6 +2,7 @@
     "files.associations": {
         "STACK.H": "cpp",
         "exceptions.h": "c",
-        "bc_interp.h": "c"
+        "bc_interp.h": "c",
+        "hashtable.h": "c"
     }
 }

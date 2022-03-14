@@ -275,7 +275,32 @@ gc_obj_alloc (java_class_t * cls)
 static int 
 sweep (gc_state_t * state)
 {
-    // HB_ERR("%s NOT IMPLEMENTED", __func__);	
+	struct nk_hashtable_iter * iter = nk_create_htable_iter(state->ref_tbl->htable);
+	
+	if (!iter) {
+		HB_ERR("Could not create ref table iterator in %s", __func__);
+		return -1;
+	}
+
+	do {
+		ref_entry_t * entry = (ref_entry_t*)nk_htable_get_iter_value(iter);
+		obj_ref_t * ref = (obj_ref_t *) nk_htable_get_iter_key(iter);
+
+		if (entry->state == GC_REF_ABSENT) {
+			free(entry);
+			object_free((native_obj_t*)ref->heap_ptr);
+			// MAX to-do check free key ?
+
+			nk_htable_remove(state->ref_tbl->htable, (unsigned long)ref, 1);
+
+			state->collect_stats.obj_collected ++;
+			// MAX to-do how to know bytes collected? through heap?
+
+		}
+
+	} while (nk_htable_iter_advance(iter) != 0);
+
+	nk_destroy_htable_iter(iter);
 	return 0;
 }
 
@@ -424,6 +449,29 @@ mark_ref (obj_ref_t * ref, gc_state_t * state)
 
 
 /*
+scan the fields of the obj recursively and mark the references
+MAX to-do: wonder if we need a return ? any error in the scan?
+*/
+static void 
+scan_obj (gc_state_t * gc_state, native_obj_t * obj)
+{
+	var_t field;
+
+	int field_count = (int) obj->field_count;
+
+	int i;
+
+	for(i = 0; i < field_count; i ++) {
+		field = obj->fields[i];
+		if(is_valid_ref(field.obj, gc_state)) {
+			mark_ref(field.obj, gc_state);
+			scan_obj(gc_state, (native_obj_t *)field.obj->heap_ptr);
+		}
+	}	
+}
+
+
+/*
  * look at all fields of the base object
  *
  * Also look at its class static fields
@@ -432,7 +480,9 @@ mark_ref (obj_ref_t * ref, gc_state_t * state)
 static int
 scan_base_obj (gc_state_t * gc_state, void * priv_data)
 {
-    // HB_ERR("%s NOT IMPLEMENTED", __func__);
+	native_obj_t * obj = (native_obj_t*)priv_data;
+	scan_obj(gc_state, obj);
+
 	return 0;
 }
 
@@ -444,7 +494,30 @@ scan_base_obj (gc_state_t * gc_state, void * priv_data)
 static int
 scan_base_frame (gc_state_t * gc_state, void * priv_data)
 {
-    // HB_ERR("%s NOT IMPLEMENTED", __func__);
+	stack_frame_t * frame = (stack_frame_t *)priv_data;
+	op_stack_t * op_stack = NULL;
+	var_t * locals = NULL;
+
+	int i;
+	while(frame) {
+		op_stack = frame->op_stack;
+		locals = frame->locals;
+
+		// MAX to-do check the max_locals
+		for(i = 0; i < frame->max_locals; i++) {
+			if(is_valid_ref(locals[i].obj, gc_state)) {
+				mark_ref(locals[i].obj, gc_state);
+			}
+		}
+
+		for(i = op_stack->sp; i > -1; i--) {
+			if(is_valid_ref(op_stack->oprs[i].obj, gc_state)) {
+				mark_ref(op_stack->oprs[i].obj, gc_state);
+			}
+		}
+
+		frame = frame->next;
+	}
 	return 0;
 }
 
@@ -457,7 +530,28 @@ scan_base_frame (gc_state_t * gc_state, void * priv_data)
 static int
 scan_class_map (gc_state_t * gc_state, void * priv_data)
 {
-    // HB_ERR("%s NOT IMPLEMENTED", __func__);
+	struct nk_hashtable * class_map = (struct nk_hashtable *)priv_data;
+
+	struct nk_hashtable_iter * iter = nk_create_htable_iter(class_map);
+	
+	if (!iter) {
+		HB_ERR("Could not create ref table iterator in %s", __func__);
+		return -1;
+	}
+
+	int i;
+	do {
+		java_class_t * cls = (java_class_t*)nk_htable_get_iter_value(iter);
+		for(i = 0; i < cls->fields_count; i ++) {
+			if(is_valid_ref(cls->field_vals[i].obj, gc_state)) {
+				mark_ref(cls->field_vals[i].obj, gc_state);
+			}
+		}
+
+	} while (nk_htable_iter_advance(iter) != 0);
+
+	nk_destroy_htable_iter(iter);
+
 	return 0;
 }
 
