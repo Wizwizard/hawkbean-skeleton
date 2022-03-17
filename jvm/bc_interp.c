@@ -294,7 +294,7 @@ handle_iload (u1 * bc, java_class_t * cls) {
 	stack_frame_t * frame = cur_thread->cur_frame;
 	u1 idx = bc[1];
 	var_t v;
-	v.int_val = ((u8)frame->locals[idx].int_val);
+	v.int_val = ((u4)frame->locals[idx].int_val);
 	push_val(v);
     return 2;
 }
@@ -339,7 +339,6 @@ handle_aload (u1 * bc, java_class_t * cls) {
 
 #define DO_ILOADN(n) \
 	stack_frame_t * frame = cur_thread->cur_frame; \
-	unsigned int a; \
 	var_t res; \
 	res.int_val = frame->locals[n].int_val; \
 	push_val(res); \
